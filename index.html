@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preflop Trainer</title>
+  <style>
+    body {
+      font-family: Arial;
+      max-width: 900px;
+      margin: 24px auto;
+      padding: 0 12px;
+    }
+
+    .card {
+      border: 1px solid #ccc;
+      padding: 24px;
+      border-radius: 12px;
+      font-size: 24px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    button {
+      margin: 6px;
+      padding: 14px 16px;
+      font-size: 17px;
+      border-radius: 8px;
+      cursor: pointer;
+      touch-action: manipulation;
+      border: 1px solid #333;
+      min-width: 120px;
+    }
+
+    #buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      justify-content: center;
+    }
+
+    .good { color: blue; }
+    .bad { color: red; }
+    .small { color: #666; font-size: 14px; }
+
+    .shove { background-color: #aeeaff; }
+    .raise_ai { background-color: #003366; color: white; }
+    .limp_call_all { background-color: #00FF00; color: black; }
+    .limp_rr { background-color: purple; color: white; }
+    .limp_call_non_ai { background-color: #4B3621; color: white; }
+    .fold { background-color: lightgray; }
+    .limp_fold { background-color: gray; color: white; }
+    .raise_call_non_ai { background-color: green; color: white; }
+    .raise_fold { background-color: red; color: white; }
+    .call { background-color: #f5d76e; }
+    .iso_fold { background-color: orange; }
+    .iso_ai { background-color: black; color: white; }
+
+    table {
+      margin-top: 20px;
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 14px;
+    }
+
+    th, td {
+      border: 1px solid #999;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th { background-color: #eee; }
+
+    #results {
+      overflow-x: auto;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        margin: 12px auto;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .card {
+        font-size: 22px;
+        padding: 20px;
+      }
+
+      button {
+        font-size: 15px;
+        padding: 12px 10px;
+        min-width: 46%;
+        margin: 4px;
+      }
+
+      table {
+        font-size: 12px;
+      }
+
+      th, td {
+        padding: 6px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>Preflop Trainer</h1>
+
+<input type="file" id="csvFile" accept=".csv,.txt">
+<p class="small">CSV headers: stack, villain, spot, hand, action</p>
+
+<div class="card" id="question">Upload je CSV</div>
+
+<div id="buttons"></div>
+<h2 id="result"></h2>
+<p id="score"></p>
+
+<button onclick="showResults()">Uitslagen</button>
+<div id="results"></div>
+
+<script>
+const ranks = ["A","K","Q","J","T","9","8","7","6","5","4","3","2"];
+
+let data = [];
+let current = null;
+let correct = 0;
+let total = 0;
+let resultsLog = [];
+
+const actions = [
+  "shove",
+  "raise_fold",
+  "raise_ai",
+  "raise_call_non_ai",
+  "limp_call_all",
+  "iso_ai",
+  "iso_fold",
+  "limp_rr",
+  "limp_call_non_ai",
+  "limp_fold",
+  "call",
+  "fold"
+];
+
+document.getElementById("csvFile").addEventListener("change", function(e) {
+  const file = e.target.files[0];
+  const reader = new FileReader();
+
+  reader.onload = function(event) {
+    const text = event.target.result;
+    data = parseCSV(text);
+
+    correct = 0;
+    total = 0;
+    resultsLog = [];
+    document.getElementById("score").innerText = "";
+    document.getElementById("results").innerHTML = "";
+
+    if (data.length === 0) {
+      document.getElementById("question").innerHTML = "Geen geldige data gevonden.";
+      return;
+    }
+
+    nextQuestion();
+  };
+
+  reader.readAsText(file);
+});
+
+function cleanValue(value) {
+  if (!value) return "";
+  return value
+    .replace(/^\uFEFF/, "")
+    .replace(/^"|"$/g, "")
+    .trim();
+}
+
+function normalizeAction(action) {
+  return cleanValue(action)
+    .toLowerCase()
+    .replaceAll(" ", "_");
+}
+
+function expandRange(range) {
+  let result = [];
+  if (!range) return result;
+
+  range.split(",").forEach(part => {
+    part = cleanValue(part);
+    if (part === "") return;
+
+    if (/^([AKQJT98765432])\1-([AKQJT98765432])\2$/.test(part)) {
+      const start = ranks.indexOf(part[0]);
+      const end = ranks.indexOf(part[3]);
+      const from = Math.min(start, end);
+      const to = Math.max(start, end);
+
+      for (let i = from; i <= to; i++) {
+        result.push(ranks[i] + ranks[i]);
+      }
+    }
+
+    else if (/^([AKQJT98765432])([AKQJT98765432])([so])-\1([AKQJT98765432])\3$/i.test(part)) {
+      part = part[0].toUpperCase() + part[1].toUpperCase() + part[2].toLowerCase() + "-" + part[4].toUpperCase() + part[5].toUpperCase() + part[6].toLowerCase();
+
+      const first = part[0];
+      const start = ranks.indexOf(part[1]);
+      const end = ranks.indexOf(part[5]);
+      const suitedness = part[2];
+      const from = Math.min(start, end);
+      const to = Math.max(start, end);
+
+      for (let i = from; i <= to; i++) {
+        if (ranks[i] !== first) {
+          result.push(first + ranks[i] + suitedness);
+        }
+      }
+    }
+
+    else if (/^([AKQJT98765432])([AKQJT98765432])([so])-([AKQJT98765432])([AKQJT98765432])\3$/i.test(part)) {
+      part = part[0].toUpperCase() + part[1].toUpperCase() + part[2].toLowerCase() + "-" + part[4].toUpperCase() + part[5].toUpperCase() + part[6].toLowerCase();
+
+      const startHigh = ranks.indexOf(part[0]);
+      const startLow = ranks.indexOf(part[1]);
+      const endHigh = ranks.indexOf(part[4]);
+      const endLow = ranks.indexOf(part[5]);
+      const suitedness = part[2];
+
+      const step = startHigh < endHigh ? 1 : -1;
+      let h = startHigh;
+      let l = startLow;
+
+      while (true) {
+        result.push(ranks[h] + ranks[l] + suitedness);
+        if (h === endHigh && l === endLow) break;
+        h += step;
+        l += step;
+      }
+    }
+
+    else {
+      result.push(part);
+    }
+  });
+
+  return result;
+}
+
+function parseCSV(text) {
+  const lines = text
+    .trim()
+    .split(/\r?\n/)
+    .filter(line => line.trim() !== "");
+
+  if (lines.length < 2) return [];
+
+  const delimiter = lines[0].includes(";") ? ";" : ",";
+
+  const headers = lines[0]
+    .split(delimiter)
+    .map(h => cleanValue(h));
+
+  let expandedData = [];
+
+  lines.slice(1).forEach(line => {
+    const values = line
+      .split(delimiter)
+      .map(v => cleanValue(v));
+
+    let obj = {};
+    headers.forEach((h, i) => {
+      obj[h] = values[i] || "";
+    });
+
+    if (!obj.stack || !obj.villain || !obj.spot || !obj.hand || !obj.action) {
+      return;
+    }
+
+    const hands = expandRange(obj.hand);
+
+    hands.forEach(hand => {
+      expandedData.push({
+        stack: obj.stack,
+        villain: obj.villain,
+        spot: obj.spot,
+        hand: hand,
+        action: normalizeAction(obj.action)
+      });
+    });
+  });
+
+  return expandedData;
+}
+
+function nextQuestion() {
+  let next;
+
+  do {
+    next = data[Math.floor(Math.random() * data.length)];
+  } while (
+    current &&
+    data.length > 1 &&
+    next.stack === current.stack &&
+    next.villain === current.villain &&
+    next.spot === current.spot &&
+    next.hand === current.hand
+  );
+
+  current = next;
+
+  document.getElementById("question").innerHTML =
+    `${current.stack}bb | ${current.villain} | ${current.spot}<br><br><strong>${current.hand}</strong>`;
+
+  document.getElementById("result").innerHTML = "";
+
+  const buttonsDiv = document.getElementById("buttons");
+  buttonsDiv.innerHTML = "";
+
+  actions.forEach(action => {
+    const btn = document.createElement("button");
+    btn.classList.add(action);
+    btn.innerText = formatAction(action);
+    btn.onclick = () => answer(action);
+    buttonsDiv.appendChild(btn);
+  });
+}
+
+function answer(choice) {
+  total++;
+
+  resultsLog.push({
+    stack: current.stack,
+    villain: current.villain,
+    spot: current.spot,
+    hand: current.hand,
+    taken: choice,
+    correct: current.action
+  });
+
+  if (choice === current.action) {
+    correct++;
+    document.getElementById("result").innerHTML =
+      `<span class="good">Goed: ${formatAction(current.action)}</span>`;
+  } else {
+    document.getElementById("result").innerHTML =
+      `Fout.<br>
+       Jij: <span class="bad">${formatAction(choice)}</span><br>
+       Correct: <span class="good">${formatAction(current.action)}</span>`;
+  }
+
+  document.getElementById("score").innerText =
+    `Score: ${correct}/${total} (${Math.round(correct / total * 100)}%)`;
+
+  setTimeout(nextQuestion, 3000);
+}
+
+function formatAction(action) {
+  return action
+    .replaceAll("_", " ")
+    .replace("non ai", "(non AI)");
+}
+
+function showResults() {
+  const resultsDiv = document.getElementById("results");
+
+  if (resultsLog.length === 0) {
+    resultsDiv.innerHTML = "<p>Nog geen resultaten.</p>";
+    return;
+  }
+
+  let html = `
+    <h2>Uitslagen</h2>
+    <table>
+      <tr>
+        <th>Hand</th>
+        <th>Spot</th>
+        <th>Genomen actie</th>
+        <th>Juiste actie</th>
+      </tr>
+  `;
+
+  resultsLog.forEach(r => {
+    const isCorrect = r.taken === r.correct;
+
+    html += `
+      <tr>
+        <td>${r.hand}</td>
+        <td>${r.stack}bb | ${r.villain} | ${r.spot}</td>
+        <td style="color:${isCorrect ? "blue" : "red"}">${formatAction(r.taken)}</td>
+        <td style="color:blue">${formatAction(r.correct)}</td>
+      </tr>
+    `;
+  });
+
+  html += "</table>";
+  resultsDiv.innerHTML = html;
+}
+</script>
+
+</body>
+</html>
