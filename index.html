@@ -7,7 +7,7 @@
   <style>
     body {
       font-family: Arial;
-      max-width: 900px;
+      max-width: 980px;
       margin: 24px auto;
       padding: 0 12px;
     }
@@ -30,6 +30,64 @@
       touch-action: manipulation;
       border: 1px solid #333;
       min-width: 120px;
+    }
+
+    #toggleFiltersBtn {
+      display: none;
+      margin: 10px 0;
+      width: 100%;
+      background: #eeeeee;
+      color: #111;
+      font-weight: bold;
+    }
+
+    .filters, .panel {
+      display: none;
+      margin: 12px 0 16px 0;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      background: #f7f7f7;
+    }
+
+    .panel {
+      display: block;
+      background: #fff;
+    }
+
+    .filterGroup {
+      margin: 12px 0;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: white;
+    }
+
+    .filterGroupTitle {
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .checkboxList {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .checkboxItem {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 8px;
+      border: 1px solid #ccc;
+      border-radius: 999px;
+      background: #fafafa;
+      font-size: 14px;
+      user-select: none;
+    }
+
+    .checkboxItem input {
+      transform: scale(1.1);
     }
 
     #buttons {
@@ -56,6 +114,12 @@
     .iso_fold { background-color: orange; }
     .iso_ai { background-color: black; color: white; }
 
+    .modeOn {
+      background: #222 !important;
+      color: white !important;
+      font-weight: bold;
+    }
+
     table {
       margin-top: 20px;
       border-collapse: collapse;
@@ -71,18 +135,117 @@
 
     th { background-color: #eee; }
 
-    #results {
+    #results, #stats, #heatmapPanel {
       overflow-x: auto;
     }
 
-    @media (max-width: 600px) {
-      body {
-        margin: 12px auto;
-      }
+    .topRow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin: 8px 0;
+    }
 
-      h1 {
-        font-size: 24px;
-      }
+    .statBox {
+      display: inline-block;
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: #fafafa;
+      margin: 3px;
+      font-size: 14px;
+    }
+
+    .heatmapGrid {
+      display: grid;
+      grid-template-columns: repeat(13, 42px);
+      gap: 3px;
+      margin-top: 12px;
+    }
+
+    .heatCell {
+      height: 34px;
+      border-radius: 5px;
+      border: 1px solid #222;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+      user-select: none;
+      color: #111;
+      background: #eeeeee;
+    }
+
+    .heat0 { background: #eeeeee; }
+    .heat1 { background: #ffd6d6; }
+    .heat2 { background: #ff9f9f; }
+    .heat3 { background: #ff5c5c; color: white; }
+    .heat4 { background: #b80000; color: white; }
+
+
+    .actionGridControls {
+      margin: 10px 0;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #fafafa;
+    }
+
+    .actionGridControls select {
+      margin: 4px;
+      padding: 8px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: 1px solid #999;
+    }
+
+    .actionGrid {
+      display: grid;
+      grid-template-columns: repeat(13, 42px);
+      gap: 3px;
+      margin-top: 12px;
+    }
+
+    .actionCell {
+      height: 34px;
+      border-radius: 5px;
+      border: 1px solid #222;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+      user-select: none;
+      color: #111;
+      background: #eeeeee;
+    }
+
+    .noAction {
+      background: #5d5545;
+      color: white;
+    }
+
+
+    /* Actiegrid: specifieke kleurregels zodat .actionCell background niet alles overschrijft */
+    .actionCell.shove { background-color: #aeeaff; color: black; }
+    .actionCell.raise_ai { background-color: #003366; color: white; }
+    .actionCell.limp_call_all { background-color: #00FF00; color: black; }
+    .actionCell.limp_rr { background-color: purple; color: white; }
+    .actionCell.limp_call_non_ai { background-color: #4B3621; color: white; }
+    .actionCell.fold { background-color: lightgray; color: black; }
+    .actionCell.limp_fold { background-color: gray; color: white; }
+    .actionCell.raise_call_non_ai { background-color: green; color: white; }
+    .actionCell.raise_fold { background-color: red; color: white; }
+    .actionCell.call { background-color: #f5d76e; color: black; }
+    .actionCell.iso_fold { background-color: orange; color: black; }
+    .actionCell.iso_ai { background-color: black; color: white; }
+
+    @media (max-width: 600px) {
+      body { margin: 12px auto; }
+
+      h1 { font-size: 24px; }
 
       .card {
         font-size: 22px;
@@ -96,12 +259,37 @@
         margin: 4px;
       }
 
-      table {
-        font-size: 12px;
+      #toggleFiltersBtn {
+        min-width: 100%;
+        margin: 8px 0;
       }
 
-      th, td {
-        padding: 6px;
+      .checkboxList { gap: 5px; }
+
+      .checkboxItem {
+        font-size: 13px;
+        padding: 7px 9px;
+      }
+
+      table { font-size: 12px; }
+
+      th, td { padding: 6px; }
+
+      .heatmapGrid,
+      .actionGrid {
+        grid-template-columns: repeat(13, minmax(22px, 1fr));
+        gap: 2px;
+      }
+
+      .heatCell,
+      .actionCell {
+        height: 26px;
+        font-size: 9px;
+      }
+
+      .actionGridControls select {
+        width: 100%;
+        margin: 5px 0;
       }
     }
   </style>
@@ -114,23 +302,76 @@
 <input type="file" id="csvFile" accept=".csv,.txt">
 <p class="small">CSV headers: stack, villain, spot, hand, action</p>
 
+<button id="toggleFiltersBtn" onclick="toggleFilters()">Filters verbergen</button>
+
+<div id="filters" class="filters">
+  <strong>Filters</strong>
+
+  <div class="filterGroup">
+    <div class="filterGroupTitle">Stacks</div>
+    <div id="stackFilters" class="checkboxList"></div>
+  </div>
+
+  <div class="filterGroup">
+    <div class="filterGroupTitle">Villain</div>
+    <div id="villainFilters" class="checkboxList"></div>
+  </div>
+
+  <div class="filterGroup">
+    <div class="filterGroupTitle">Spots</div>
+    <div id="spotFilters" class="checkboxList"></div>
+  </div>
+
+  <button onclick="selectAllFilters()">Alles aan</button>
+  <button onclick="clearAllFilters()">Alles uit</button>
+  <button onclick="resetFilters()">Reset filters</button>
+</div>
+
+<div class="panel" id="modePanel">
+  <div class="topRow">
+    <button id="difficultBtn" onclick="toggleDifficultMode()">Moeilijke handen: uit</button>
+    <button onclick="showStats()">Stats</button>
+    <button onclick="showHeatmap()">Heatmap fouten</button>
+    <button onclick="showActionGrid()">Actiegrid</button>
+    <button onclick="exportProgress()">Export progress</button>
+    <button onclick="document.getElementById('progressFile').click()">Import progress</button>
+    <input type="file" id="progressFile" accept=".json,.txt" style="display:none" onchange="importProgress(event)">
+  </div>
+</div>
+
 <div class="card" id="question">Upload je CSV</div>
 
 <div id="buttons"></div>
 <h2 id="result"></h2>
 <p id="score"></p>
+<p id="activePool" class="small"></p>
+
+<div class="panel">
+  <span class="statBox" id="streakBox">Streak: 0</span>
+  <span class="statBox" id="bestStreakBox">Best streak: 0</span>
+  <span class="statBox" id="difficultCountBox">Moeilijke handen: 0</span>
+</div>
 
 <button onclick="showResults()">Uitslagen</button>
 <div id="results"></div>
+<div id="stats"></div>
+<div id="heatmapPanel"></div>
+<div id="actionGridPanel"></div>
 
 <script>
 const ranks = ["A","K","Q","J","T","9","8","7","6","5","4","3","2"];
 
 let data = [];
+let filteredData = [];
 let current = null;
 let correct = 0;
 let total = 0;
 let resultsLog = [];
+let mistakeWeights = {};
+let cardStats = {};
+let currentStreak = 0;
+let bestStreak = 0;
+let difficultMode = false;
 
 const actions = [
   "shove",
@@ -154,23 +395,58 @@ document.getElementById("csvFile").addEventListener("change", function(e) {
   reader.onload = function(event) {
     const text = event.target.result;
     data = parseCSV(text);
+    filteredData = [...data];
 
     correct = 0;
     total = 0;
     resultsLog = [];
+    mistakeWeights = {};
+    cardStats = {};
+    currentStreak = 0;
+    bestStreak = 0;
+    current = null;
+    difficultMode = false;
+
+    document.getElementById("difficultBtn").innerText = "Moeilijke handen: uit";
+    document.getElementById("difficultBtn").classList.remove("modeOn");
     document.getElementById("score").innerText = "";
     document.getElementById("results").innerHTML = "";
+    document.getElementById("stats").innerHTML = "";
+  document.getElementById("actionGridPanel").innerHTML = "";
+    document.getElementById("heatmapPanel").innerHTML = "";
+    document.getElementById("actionGridPanel").innerHTML = "";
+    document.getElementById("result").innerHTML = "";
 
     if (data.length === 0) {
       document.getElementById("question").innerHTML = "Geen geldige data gevonden.";
+      document.getElementById("filters").style.display = "none";
+      document.getElementById("toggleFiltersBtn").style.display = "none";
       return;
     }
 
-    nextQuestion();
+    populateFilters();
+    document.getElementById("filters").style.display = "block";
+    document.getElementById("toggleFiltersBtn").style.display = "block";
+    document.getElementById("toggleFiltersBtn").innerText = "Filters verbergen";
+    updateStreakDisplay();
+    applyFilters();
   };
 
   reader.readAsText(file);
 });
+
+function toggleFilters() {
+  const filters = document.getElementById("filters");
+  const btn = document.getElementById("toggleFiltersBtn");
+
+  if (filters.style.display === "none") {
+    filters.style.display = "block";
+    btn.innerText = "Filters verbergen";
+  } else {
+    filters.style.display = "none";
+    btn.innerText = "Filters tonen";
+  }
+}
 
 function cleanValue(value) {
   if (!value) return "";
@@ -200,9 +476,7 @@ function expandRange(range) {
       const from = Math.min(start, end);
       const to = Math.max(start, end);
 
-      for (let i = from; i <= to; i++) {
-        result.push(ranks[i] + ranks[i]);
-      }
+      for (let i = from; i <= to; i++) result.push(ranks[i] + ranks[i]);
     }
 
     else if (/^([AKQJT98765432])([AKQJT98765432])([so])-\1([AKQJT98765432])\3$/i.test(part)) {
@@ -216,9 +490,7 @@ function expandRange(range) {
       const to = Math.max(start, end);
 
       for (let i = from; i <= to; i++) {
-        if (ranks[i] !== first) {
-          result.push(first + ranks[i] + suitedness);
-        }
+        if (ranks[i] !== first) result.push(first + ranks[i] + suitedness);
       }
     }
 
@@ -243,9 +515,7 @@ function expandRange(range) {
       }
     }
 
-    else {
-      result.push(part);
-    }
+    else result.push(part);
   });
 
   return result;
@@ -268,18 +538,14 @@ function parseCSV(text) {
   let expandedData = [];
 
   lines.slice(1).forEach(line => {
-    const values = line
-      .split(delimiter)
-      .map(v => cleanValue(v));
+    const values = line.split(delimiter).map(v => cleanValue(v));
 
     let obj = {};
     headers.forEach((h, i) => {
       obj[h] = values[i] || "";
     });
 
-    if (!obj.stack || !obj.villain || !obj.spot || !obj.hand || !obj.action) {
-      return;
-    }
+    if (!obj.stack || !obj.villain || !obj.spot || !obj.hand || !obj.action) return;
 
     const hands = expandRange(obj.hand);
 
@@ -297,21 +563,184 @@ function parseCSV(text) {
   return expandedData;
 }
 
-function nextQuestion() {
+function populateFilters() {
+  fillCheckboxes("stackFilters", [...new Set(data.map(x => x.stack))], "stack");
+  fillCheckboxes("villainFilters", [...new Set(data.map(x => x.villain))], "villain");
+  fillCheckboxes("spotFilters", [...new Set(data.map(x => x.spot))], "spot");
+}
+
+function fillCheckboxes(containerId, values, type) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = "";
+
+  values.sort().forEach(value => {
+    const label = document.createElement("label");
+    label.className = "checkboxItem";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = value;
+    checkbox.checked = true;
+    checkbox.dataset.type = type;
+    checkbox.onchange = applyFilters;
+
+    label.appendChild(checkbox);
+    label.appendChild(document.createTextNode(value));
+    container.appendChild(label);
+  });
+}
+
+function getSelectedValues(type) {
+  return Array.from(document.querySelectorAll(`input[data-type="${type}"]:checked`))
+    .map(cb => cb.value);
+}
+
+function applyFilters() {
+  const selectedStacks = getSelectedValues("stack");
+  const selectedVillains = getSelectedValues("villain");
+  const selectedSpots = getSelectedValues("spot");
+
+  filteredData = data.filter(card => {
+    const stackOk = selectedStacks.length === 0 || selectedStacks.includes(card.stack);
+    const villainOk = selectedVillains.length === 0 || selectedVillains.includes(card.villain);
+    const spotOk = selectedSpots.length === 0 || selectedSpots.includes(card.spot);
+
+    return stackOk && villainOk && spotOk;
+  });
+
+  current = null;
+  document.getElementById("result").innerHTML = "";
+  document.getElementById("results").innerHTML = "";
+  document.getElementById("stats").innerHTML = "";
+  document.getElementById("heatmapPanel").innerHTML = "";
+  document.getElementById("actionGridPanel").innerHTML = "";
+  updateActivePoolText();
+  updateDifficultCount();
+
+  if (filteredData.length === 0) {
+    document.getElementById("question").innerHTML = "Geen handen voor deze filter.";
+    document.getElementById("buttons").innerHTML = "";
+    return;
+  }
+
+  nextQuestion();
+}
+
+function setAllCheckboxes(checked) {
+  document.querySelectorAll('#filters input[type="checkbox"]').forEach(cb => {
+    cb.checked = checked;
+  });
+  applyFilters();
+}
+
+function selectAllFilters() { setAllCheckboxes(true); }
+function clearAllFilters() { setAllCheckboxes(false); }
+function resetFilters() { setAllCheckboxes(true); }
+
+function updateActivePoolText() {
+  const difficultCount = getDifficultPool().length;
+  document.getElementById("activePool").innerText =
+    `Actieve trainingspool: ${filteredData.length} handen | Moeilijke handen: ${difficultCount}`;
+}
+
+function getCardKey(card) {
+  return `${card.stack}|${card.villain}|${card.spot}|${card.hand}`;
+}
+
+function ensureCardStats(key) {
+  if (!cardStats[key]) {
+    cardStats[key] = {
+      attempts: 0,
+      correct: 0,
+      wrong: 0,
+      streak: 0,
+      due: 0,
+      lastSeen: null
+    };
+  }
+  return cardStats[key];
+}
+
+function getDifficultPool() {
+  return filteredData.filter(card => {
+    const key = getCardKey(card);
+    const s = cardStats[key];
+    return s && s.wrong > 0 && (s.wrong > s.correct || (mistakeWeights[key] || 0) > 0);
+  });
+}
+
+function toggleDifficultMode() {
+  difficultMode = !difficultMode;
+
+  const btn = document.getElementById("difficultBtn");
+  if (difficultMode) {
+    btn.innerText = "Moeilijke handen: aan";
+    btn.classList.add("modeOn");
+  } else {
+    btn.innerText = "Moeilijke handen: uit";
+    btn.classList.remove("modeOn");
+  }
+
+  updateActivePoolText();
+  nextQuestion();
+}
+
+function getActiveQuestionPool() {
+  if (!difficultMode) return filteredData;
+
+  const difficultPool = getDifficultPool();
+  return difficultPool.length > 0 ? difficultPool : filteredData;
+}
+
+function pickWeightedQuestion() {
+  const activePool = getActiveQuestionPool();
+  let pool = [];
+  const now = Date.now();
+
+  activePool.forEach(card => {
+    const key = getCardKey(card);
+    const mistakes = mistakeWeights[key] || 0;
+    const stats = cardStats[key];
+
+    let weight = 1 + mistakes * 4;
+
+    // Simpele spaced repetition:
+    // fout = direct extra vaak terug
+    // goed = even minder vaak terug, tenzij nog veel fouten open staan
+    if (stats && stats.due && now < stats.due && mistakes === 0 && !difficultMode) {
+      weight = 0;
+    }
+
+    for (let i = 0; i < weight; i++) pool.push(card);
+  });
+
+  // Als alle kaarten door due tijdelijk uitgesloten zijn, pak normale pool.
+  if (pool.length === 0) pool = [...activePool];
+
   let next;
 
   do {
-    next = data[Math.floor(Math.random() * data.length)];
+    next = pool[Math.floor(Math.random() * pool.length)];
   } while (
     current &&
-    data.length > 1 &&
+    pool.length > 1 &&
     next.stack === current.stack &&
     next.villain === current.villain &&
     next.spot === current.spot &&
     next.hand === current.hand
   );
 
-  current = next;
+  return next;
+}
+
+function nextQuestion() {
+  if (filteredData.length === 0) {
+    document.getElementById("question").innerHTML = "Geen handen beschikbaar.";
+    document.getElementById("buttons").innerHTML = "";
+    return;
+  }
+
+  current = pickWeightedQuestion();
 
   document.getElementById("question").innerHTML =
     `${current.stack}bb | ${current.villain} | ${current.spot}<br><br><strong>${current.hand}</strong>`;
@@ -333,30 +762,71 @@ function nextQuestion() {
 function answer(choice) {
   total++;
 
-  resultsLog.push({
-    stack: current.stack,
-    villain: current.villain,
-    spot: current.spot,
-    hand: current.hand,
-    taken: choice,
-    correct: current.action
-  });
+  const key = getCardKey(current);
+  const wasCorrect = choice === current.action;
+  const stats = ensureCardStats(key);
+  const now = Date.now();
 
-  if (choice === current.action) {
+  stats.attempts++;
+  stats.lastSeen = now;
+
+  if (wasCorrect) {
     correct++;
+    currentStreak++;
+    bestStreak = Math.max(bestStreak, currentStreak);
+
+    stats.correct++;
+    stats.streak++;
+    mistakeWeights[key] = Math.max((mistakeWeights[key] || 0) - 1, 0);
+
+    // Spaced repetition: hoe vaker achter elkaar goed, hoe langer hij even wegblijft.
+    const delaySeconds = Math.min(600, 15 * Math.pow(2, Math.min(stats.streak, 5)));
+    stats.due = now + delaySeconds * 1000;
+
     document.getElementById("result").innerHTML =
       `<span class="good">Goed: ${formatAction(current.action)}</span>`;
   } else {
+    currentStreak = 0;
+
+    stats.wrong++;
+    stats.streak = 0;
+    stats.due = now;
+    mistakeWeights[key] = (mistakeWeights[key] || 0) + 1;
+
     document.getElementById("result").innerHTML =
       `Fout.<br>
        Jij: <span class="bad">${formatAction(choice)}</span><br>
        Correct: <span class="good">${formatAction(current.action)}</span>`;
   }
 
+  resultsLog.push({
+    stack: current.stack,
+    villain: current.villain,
+    spot: current.spot,
+    hand: current.hand,
+    taken: choice,
+    correct: current.action,
+    wasCorrect: wasCorrect
+  });
+
   document.getElementById("score").innerText =
     `Score: ${correct}/${total} (${Math.round(correct / total * 100)}%)`;
 
+  updateStreakDisplay();
+  updateDifficultCount();
+
   setTimeout(nextQuestion, 3000);
+}
+
+function updateStreakDisplay() {
+  document.getElementById("streakBox").innerText = `Streak: ${currentStreak}`;
+  document.getElementById("bestStreakBox").innerText = `Best streak: ${bestStreak}`;
+}
+
+function updateDifficultCount() {
+  document.getElementById("difficultCountBox").innerText =
+    `Moeilijke handen: ${getDifficultPool().length}`;
+  updateActivePoolText();
 }
 
 function formatAction(action) {
@@ -367,6 +837,9 @@ function formatAction(action) {
 
 function showResults() {
   const resultsDiv = document.getElementById("results");
+  document.getElementById("stats").innerHTML = "";
+  document.getElementById("heatmapPanel").innerHTML = "";
+  document.getElementById("actionGridPanel").innerHTML = "";
 
   if (resultsLog.length === 0) {
     resultsDiv.innerHTML = "<p>Nog geen resultaten.</p>";
@@ -399,6 +872,333 @@ function showResults() {
 
   html += "</table>";
   resultsDiv.innerHTML = html;
+}
+
+function showStats() {
+  const statsDiv = document.getElementById("stats");
+  document.getElementById("results").innerHTML = "";
+  document.getElementById("heatmapPanel").innerHTML = "";
+  document.getElementById("actionGridPanel").innerHTML = "";
+
+  if (resultsLog.length === 0) {
+    statsDiv.innerHTML = "<p>Nog geen stats.</p>";
+    return;
+  }
+
+  const byAction = {};
+  const bySpot = {};
+
+  resultsLog.forEach(r => {
+    if (!byAction[r.correct]) byAction[r.correct] = { total: 0, correct: 0 };
+    byAction[r.correct].total++;
+    if (r.wasCorrect) byAction[r.correct].correct++;
+
+    const spotKey = `${r.stack}bb | ${r.villain} | ${r.spot}`;
+    if (!bySpot[spotKey]) bySpot[spotKey] = { total: 0, correct: 0 };
+    bySpot[spotKey].total++;
+    if (r.wasCorrect) bySpot[spotKey].correct++;
+  });
+
+  let html = `<h2>Stats per actie</h2><table>
+    <tr><th>Actie</th><th>Goed</th><th>Totaal</th><th>%</th></tr>`;
+
+  Object.keys(byAction).sort().forEach(action => {
+    const s = byAction[action];
+    html += `<tr>
+      <td>${formatAction(action)}</td>
+      <td>${s.correct}</td>
+      <td>${s.total}</td>
+      <td>${Math.round((s.correct / s.total) * 100)}%</td>
+    </tr>`;
+  });
+
+  html += `</table><h2>Stats per spot</h2><table>
+    <tr><th>Spot</th><th>Goed</th><th>Totaal</th><th>%</th></tr>`;
+
+  Object.keys(bySpot).sort().forEach(spot => {
+    const s = bySpot[spot];
+    html += `<tr>
+      <td>${spot}</td>
+      <td>${s.correct}</td>
+      <td>${s.total}</td>
+      <td>${Math.round((s.correct / s.total) * 100)}%</td>
+    </tr>`;
+  });
+
+  html += "</table>";
+
+  const difficult = getDifficultPool()
+    .map(card => {
+      const key = getCardKey(card);
+      const s = cardStats[key];
+      return { card, stats: s, weight: mistakeWeights[key] || 0 };
+    })
+    .sort((a, b) => (b.stats.wrong - b.stats.correct) - (a.stats.wrong - a.stats.correct))
+    .slice(0, 20);
+
+  html += `<h2>Top moeilijke handen</h2><table>
+    <tr><th>Hand</th><th>Spot</th><th>Fout</th><th>Goed</th><th>Weight</th></tr>`;
+
+  difficult.forEach(x => {
+    html += `<tr>
+      <td>${x.card.hand}</td>
+      <td>${x.card.stack}bb | ${x.card.villain} | ${x.card.spot}</td>
+      <td>${x.stats.wrong}</td>
+      <td>${x.stats.correct}</td>
+      <td>${x.weight}</td>
+    </tr>`;
+  });
+
+  html += "</table>";
+
+  statsDiv.innerHTML = html;
+}
+
+function showHeatmap() {
+  const panel = document.getElementById("heatmapPanel");
+  document.getElementById("results").innerHTML = "";
+  document.getElementById("stats").innerHTML = "";
+
+  const wrongByHand = {};
+  Object.keys(cardStats).forEach(key => {
+    const parts = key.split("|");
+    const hand = parts[3];
+    wrongByHand[hand] = (wrongByHand[hand] || 0) + (cardStats[key].wrong || 0);
+  });
+
+  let html = `<h2>Fouten heatmap</h2><p class="small">Donkerder rood = vaker fout.</p><div class="heatmapGrid">`;
+
+  for (let row = 0; row < 13; row++) {
+    for (let col = 0; col < 13; col++) {
+      let hand;
+
+      if (row === col) {
+        hand = ranks[row] + ranks[col];
+      } else if (row < col) {
+        hand = ranks[row] + ranks[col] + "s";
+      } else {
+        hand = ranks[col] + ranks[row] + "o";
+      }
+
+      const wrong = wrongByHand[hand] || 0;
+      let cls = "heat0";
+      if (wrong >= 1) cls = "heat1";
+      if (wrong >= 2) cls = "heat2";
+      if (wrong >= 4) cls = "heat3";
+      if (wrong >= 7) cls = "heat4";
+
+      html += `<div class="heatCell ${cls}" title="${hand}: ${wrong} fout">${hand}</div>`;
+    }
+  }
+
+  html += "</div>";
+  panel.innerHTML = html;
+}
+
+
+function showActionGrid() {
+  const panel = document.getElementById("actionGridPanel");
+  document.getElementById("results").innerHTML = "";
+  document.getElementById("stats").innerHTML = "";
+  document.getElementById("heatmapPanel").innerHTML = "";
+
+  if (data.length === 0) {
+    panel.innerHTML = "<p>Upload eerst je CSV.</p>";
+    return;
+  }
+
+  const stacks = [...new Set(data.map(x => x.stack))].sort();
+  const defaultStack = stacks[0];
+
+  panel.innerHTML = `
+    <h2>Actiegrid</h2>
+    <p class="small">Kies exact één stack, villain en spot. Eén grid kan maar één stacksize/context tegelijk tonen.</p>
+
+    <div class="actionGridControls">
+      <label>Stack:
+        <select id="actionGridStack" onchange="refreshActionGridSelectors()"></select>
+      </label>
+
+      <label>Villain:
+        <select id="actionGridVillain" onchange="refreshActionGridSpotOptions()"></select>
+      </label>
+
+      <label>Spot:
+        <select id="actionGridSpot" onchange="renderActionGrid()"></select>
+      </label>
+    </div>
+
+    <div id="actionGridMeta" class="small"></div>
+    <div id="actionGrid" class="actionGrid"></div>
+  `;
+
+  const stackSelect = document.getElementById("actionGridStack");
+  stacks.forEach(stack => {
+    const option = document.createElement("option");
+    option.value = stack;
+    option.textContent = stack;
+    stackSelect.appendChild(option);
+  });
+
+  stackSelect.value = defaultStack;
+  refreshActionGridSelectors();
+}
+
+function refreshActionGridSelectors() {
+  const stack = document.getElementById("actionGridStack").value;
+
+  const villains = [...new Set(data
+    .filter(x => x.stack === stack)
+    .map(x => x.villain)
+  )].sort();
+
+  const villainSelect = document.getElementById("actionGridVillain");
+  villainSelect.innerHTML = "";
+
+  villains.forEach(villain => {
+    const option = document.createElement("option");
+    option.value = villain;
+    option.textContent = villain;
+    villainSelect.appendChild(option);
+  });
+
+  refreshActionGridSpotOptions();
+}
+
+function refreshActionGridSpotOptions() {
+  const stack = document.getElementById("actionGridStack").value;
+  const villain = document.getElementById("actionGridVillain").value;
+
+  const spots = [...new Set(data
+    .filter(x => x.stack === stack && x.villain === villain)
+    .map(x => x.spot)
+  )].sort();
+
+  const spotSelect = document.getElementById("actionGridSpot");
+  spotSelect.innerHTML = "";
+
+  spots.forEach(spot => {
+    const option = document.createElement("option");
+    option.value = spot;
+    option.textContent = spot;
+    spotSelect.appendChild(option);
+  });
+
+  renderActionGrid();
+}
+
+function renderActionGrid() {
+  const stack = document.getElementById("actionGridStack").value;
+  const villain = document.getElementById("actionGridVillain").value;
+  const spot = document.getElementById("actionGridSpot").value;
+
+  const matchingCards = data.filter(card =>
+    card.stack === stack &&
+    card.villain === villain &&
+    card.spot === spot
+  );
+
+  const actionByHand = {};
+  matchingCards.forEach(card => {
+    actionByHand[card.hand] = card.action;
+  });
+
+  const grid = document.getElementById("actionGrid");
+  const meta = document.getElementById("actionGridMeta");
+
+  if (!grid || !meta) return;
+
+  meta.innerText = `${stack}bb | ${villain} | ${spot} | ${matchingCards.length} handen`;
+
+  grid.innerHTML = "";
+
+  for (let row = 0; row < 13; row++) {
+    for (let col = 0; col < 13; col++) {
+      let hand;
+
+      if (row === col) {
+        hand = ranks[row] + ranks[col];
+      } else if (row < col) {
+        hand = ranks[row] + ranks[col] + "s";
+      } else {
+        hand = ranks[col] + ranks[row] + "o";
+      }
+
+      const action = actionByHand[hand];
+
+      const cell = document.createElement("div");
+      cell.className = "actionCell";
+
+      if (action) {
+        cell.classList.add(action);
+        cell.title = `${hand}: ${formatAction(action)}`;
+      } else {
+        cell.classList.add("noAction");
+        cell.title = `${hand}: geen actie gevonden`;
+      }
+
+      cell.innerText = hand;
+      grid.appendChild(cell);
+    }
+  }
+}
+
+
+function exportProgress() {
+  const progress = {
+    version: "preflop-trainer-progress-v1",
+    correct,
+    total,
+    currentStreak,
+    bestStreak,
+    mistakeWeights,
+    cardStats,
+    resultsLog
+  };
+
+  const blob = new Blob([JSON.stringify(progress, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "preflop_trainer_progress.json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  URL.revokeObjectURL(url);
+}
+
+function importProgress(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = function(e) {
+    try {
+      const progress = JSON.parse(e.target.result);
+
+      correct = progress.correct || 0;
+      total = progress.total || 0;
+      currentStreak = progress.currentStreak || 0;
+      bestStreak = progress.bestStreak || 0;
+      mistakeWeights = progress.mistakeWeights || {};
+      cardStats = progress.cardStats || {};
+      resultsLog = progress.resultsLog || [];
+
+      document.getElementById("score").innerText =
+        total > 0 ? `Score: ${correct}/${total} (${Math.round(correct / total * 100)}%)` : "";
+
+      updateStreakDisplay();
+      updateDifficultCount();
+      alert("Progress geïmporteerd.");
+    } catch (err) {
+      alert("Import mislukt. Controleer het bestand.");
+    }
+  };
+
+  reader.readAsText(file);
 }
 </script>
 
