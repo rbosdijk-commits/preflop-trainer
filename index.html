@@ -111,8 +111,10 @@
     .raise_call_non_ai { background-color: green; color: white; }
     .raise_fold { background-color: red; color: white; }
     .call_check { background-color: #f5d76e; }
-    .iso_fold { background-color: orange; }
-    .iso_ai { background-color: black; color: white; }
+    .iso_fold_SMA { background-color: orange; }
+ .iso_fold_BIG { background-color: #CC8400; }
+    .iso_ai_SMA { background-color: #00BFA5; color: white; }
+.iso_ai_BIG { background-color: #00695C; color: white; }
 
     .modeOn {
       background: #222 !important;
@@ -239,8 +241,10 @@
     .actionCell.raise_call_non_ai { background-color: green; color: white; }
     .actionCell.raise_fold { background-color: red; color: white; }
     .actionCell.call_check { background-color: #f5d76e; color: black; }
-    .actionCell.iso_fold { background-color: orange; color: black; }
-    .actionCell.iso_ai { background-color: black; color: white; }
+    .actionCell.iso_fold_SMA { background-color: orange; color: black; }
+.actionCell.iso_fold_BIG { background-color: #CC8400; color: black; }
+    .actionCell.iso_ai_SMA { background-color: #00BFA5; color: white; }
+.actionCell.iso_ai_BIG { background-color: #00695C; color: white; }
 
     @media (max-width: 600px) {
       body { margin: 12px auto; }
@@ -379,8 +383,10 @@ const actions = [
   "raise_ai",
   "raise_call_non_ai",
   "limp_call_all",
-  "iso_ai",
-  "iso_fold",
+  "iso_ai_BIG",
+"iso_ai_SMA",
+  "iso_fold_BIG",
+"iso_fold_SMA",
   "limp_rr",
   "limp_call_non_ai",
   "limp_fold",
