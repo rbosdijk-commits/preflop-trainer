@@ -463,9 +463,13 @@ function cleanValue(value) {
 }
 
 function normalizeAction(action) {
-  return cleanValue(action)
+  const value = cleanValue(action)
     .toLowerCase()
     .replaceAll(" ", "_");
+
+  return value
+    .replace("_big", "_BIG")
+    .replace("_sma", "_SMA");
 }
 
 function expandRange(range) {
