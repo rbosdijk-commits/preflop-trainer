@@ -111,10 +111,10 @@
     .raise_call_non_ai { background-color: green; color: white; }
     .raise_fold { background-color: red; color: white; }
     .call_check { background-color: #f5d76e; }
-    .iso_fold_SMA { background-color: #FFB300; }
- .iso_fold_BIG { background-color: #8C4B00; color: white; }
-    .iso_ai_SMA { background-color: #00BFA5; color: white; }
-.iso_ai_BIG { background-color: #00695C; color: white; }
+   .iso_fold_sma { background-color: #FFB300; }
+.iso_fold_big { background-color: #8C4B00; color: white; }
+.iso_ai_sma { background-color: #00BFA5; color: white; }
+.iso_ai_big { background-color: #00695C; color: white; }
 
     .modeOn {
       background: #222 !important;
@@ -241,10 +241,10 @@
     .actionCell.raise_call_non_ai { background-color: green; color: white; }
     .actionCell.raise_fold { background-color: red; color: white; }
     .actionCell.call_check { background-color: #f5d76e; color: black; }
-    .actionCell.iso_fold_SMA { background-color: #FFB300; color: black; }
-.actionCell.iso_fold_BIG { background-color: #8C4B00; color: white; }
-    .actionCell.iso_ai_SMA { background-color: #00BFA5; color: white; }
-.actionCell.iso_ai_BIG { background-color: #00695C; color: white; }
+   .actionCell.iso_fold_sma { background-color: #FFB300; color: black; }
+.actionCell.iso_fold_big { background-color: #8C4B00; color: white; }
+.actionCell.iso_ai_sma { background-color: #00BFA5; color: white; }
+.actionCell.iso_ai_big { background-color: #00695C; color: white; }
 
     @media (max-width: 600px) {
       body { margin: 12px auto; }
@@ -383,10 +383,10 @@ const actions = [
   "raise_ai",
   "raise_call_non_ai",
   "limp_call_all",
-  "iso_ai_BIG",
-"iso_ai_SMA",
-  "iso_fold_BIG",
-"iso_fold_SMA",
+  "iso_ai_big",
+  "iso_ai_sma",
+  "iso_fold_big",
+  "iso_fold_sma",
   "limp_rr",
   "limp_call_non_ai",
   "limp_fold",
@@ -463,13 +463,9 @@ function cleanValue(value) {
 }
 
 function normalizeAction(action) {
-  const value = cleanValue(action)
+  return cleanValue(action)
     .toLowerCase()
     .replaceAll(" ", "_");
-
-  return value
-    .replace("_big", "_BIG")
-    .replace("_sma", "_SMA");
 }
 
 function expandRange(range) {
